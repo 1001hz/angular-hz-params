@@ -24,13 +24,13 @@ router.use(function (req, res, next) {
 
 router.get('/', function (req, res) {
     d.run(function () {
-        res.sendfile('./dist/index.html');
+        res.sendfile('./dev/index.html');
     });
 });
 
 router.get('/*', function (req, res) {
     d.run(function () {
-        res.sendfile('./dist/' + req.url);
+        res.sendfile('./' + req.url);
     });
 });
 

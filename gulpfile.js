@@ -6,83 +6,27 @@ var plugins = require("gulp-load-plugins")({
     replaceString: /\bgulp[\-.]/
 });
 var concat = require('gulp-concat');
-var ngAnnotate = require('gulp-ng-annotate');
-var templateCache = require('gulp-angular-templatecache');
 var del = require('del');
 var Q = require('q');
-var inject = require('gulp-inject');
-var es = require('event-stream');
-var series = require('stream-series');
 var angularFilesort = require('gulp-angular-filesort');
-var print = require('gulp-print');
+var inject = require('gulp-inject');
 
-// Define default destination folder
 var paths = {
     scripts: 'src/**/*.js',
-    css: "src/css",
-    views: "src/views",
-    images: "src/img",
-    srcIndex: "src/index.html",
-    devDist: "dist",
-    devDistJs: "dist/js",
-    devDistCss: "dist/css",
-    devDistFonts: "dist/fonts",
-    devDistViews: "dist/views",
-    devDistImages: "dist/img",
-    prodDist: "dist",
-    prodDistJs: "dist/js",
-    prodDistCss: "dist/css",
-    prodDistFonts: "dist/fonts",
-    prodDistViews: "dist/views",
-    prodDistImages: "dist/img"
+    dist: "dist",
+    srcIndex: 'src/index.html',
+    dev: 'dev'
 }
 
-// pipes are functions that run files flow through
 var pipes = {};
 
-// empty out dist directory
-gulp.task('dev-clean', function () {
+gulp.task('clean', function () {
     var deferred = Q.defer();
-    del([paths.devDist + '/*'], function () {
+    del([paths.dist + '/*'], function () {
         deferred.resolve();
     });
     return deferred.promise;
 });
-
-// empty out web directory
-gulp.task('prod-clean', function () {
-    var deferred = Q.defer();
-    del([paths.prodDist + '/*'], function () {
-        deferred.resolve();
-    });
-    return deferred.promise;
-});
-
-
-pipes.orderedVendorScripts = function () {
-    return plugins.order(['jquery.js', 'angular.js']);
-}
-
-
-pipes.validatedIndex = function () {
-    return gulp.src(paths.srcIndex);
-}
-
-
-pipes.builtVendorScriptsDev = function () {
-    return gulp.src(plugins.mainBowerFiles())
-        .pipe(plugins.filter('*.js'))
-        .pipe(gulp.dest(paths.devDistJs + '/vendor'));
-}
-
-pipes.builtVendorScriptsProd = function () {
-    return gulp.src(plugins.mainBowerFiles())
-        .pipe(plugins.filter('*.js'))
-        .pipe(pipes.orderedVendorScripts())
-        .pipe(plugins.concat('vendor.min.js'))
-        .pipe(plugins.uglify())
-        .pipe(gulp.dest(paths.prodDistJs));
-};
 
 pipes.orderedAppScripts = function () {
     return angularFilesort();
@@ -90,110 +34,42 @@ pipes.orderedAppScripts = function () {
 
 pipes.validatedAppScripts = function () {
     return gulp.src([paths.scripts,'!src/tests/*.js'])
-        .pipe(print())
         .pipe(plugins.jshint());
 };
 
-pipes.spotifyPartials = function () {
-    return gulp.src(['app/**/*.html', '!app/index.html'])
-        .pipe(plugins.htmlhint({ 'doctype-first': false }));
-};
-
-pipes.scriptedSpotifyPartials = function () {
-    return pipes.spotifyPartials()
-        .pipe(plugins.htmlhint.failReporter())
-        .pipe(plugins.htmlmin({ collapseWhitespace: true, removeComments: true }))
-        .pipe(plugins.ngHtml2js({
-            moduleName: "app.spotify"
-        }));
-};
-
-pipes.builtAppScriptsDev = function () {
-    var scriptedSpotifyPartials = pipes.scriptedSpotifyPartials();
-    var validatedAppScripts = pipes.validatedAppScripts();
-    return es.merge(series(scriptedSpotifyPartials, validatedAppScripts))
-        .pipe(gulp.dest(paths.devDist));
-};
-
-pipes.builtAppScriptsProd = function () {
-    var scriptedSpotifyPartials = pipes.scriptedSpotifyPartials();
-    var validatedAppScripts = pipes.validatedAppScripts();
-
-    return es.merge(series(scriptedSpotifyPartials, validatedAppScripts))
-        .pipe(pipes.orderedAppScripts())
-        .pipe(plugins.concat('app.min.js'))
-        .pipe(plugins.uglify())
-        .pipe(gulp.dest(paths.prodDistJs));
-};
-
-
-pipes.vendorStyles = function () {
+pipes.builtVendorScriptsDev = function () {
     return gulp.src(plugins.mainBowerFiles())
-        .pipe(plugins.filter('*.css'))
-        .pipe(gulp.dest(paths.devDistCss));
+        .pipe(plugins.filter('*.js'))
+        .pipe(gulp.dest(paths.dev + '/vendor'));
 }
 
+pipes.builtScript = function () {
+    var validatedAppScripts = pipes.validatedAppScripts();
 
-pipes.builtStylesDev = function () {
-    var cssFiles = [paths.css + '/*'];
-    return gulp.src(cssFiles)
-        .pipe(gulp.dest(paths.devDistCss));
+    return validatedAppScripts
+        .pipe(pipes.orderedAppScripts())
+        .pipe(plugins.concat('angular-hz-params.js'))
+        .pipe(gulp.dest(paths.dist));
 };
 
-pipes.builtStylesProd = function () {
-    var cssFiles = [paths.css + '/*'];
-    return gulp.src(cssFiles)
-        .pipe(gulp.dest(paths.prodDistCss));
+pipes.builtScriptMin = function () {
+    var validatedAppScripts = pipes.validatedAppScripts();
+
+    return validatedAppScripts
+        .pipe(pipes.orderedAppScripts())
+        .pipe(plugins.concat('angular-hz-params.min.js'))
+        .pipe(plugins.uglify())
+        .pipe(gulp.dest(paths.dist));
 };
 
-pipes.builtIndexDev = function () {
+pipes.built = function () {
+    var script = pipes.builtScript();
+    var builtVendorScriptsDev = pipes.builtVendorScriptsDev();
+    //pipes.builtScriptMin();
 
-    var orderedVendorScripts = pipes.builtVendorScriptsDev()
-        .pipe(pipes.orderedVendorScripts());
-
-    var orderedAppScripts = pipes.builtAppScriptsDev()
-        .pipe(pipes.orderedAppScripts());
-
-    var appStyles = pipes.builtStylesDev();
-    var vendorStyles = pipes.vendorStyles();
-
-    var imageFiles = [paths.images + '/*'];
-    gulp.src(imageFiles)
-        .pipe(gulp.dest(paths.devDistImages));
-
-    return pipes.validatedIndex()
-        .pipe(gulp.dest(paths.devDist)) // write first to get relative path for inject
-        .pipe(inject(series(orderedVendorScripts, orderedAppScripts), { relative: true }))
-        .pipe(inject(series(vendorStyles, appStyles), { relative: true }))
-        .pipe(gulp.dest(paths.devDist));
-}
-
-pipes.builtIndexProd = function () {
-
-    var vendorScripts = pipes.builtVendorScriptsProd();
-    var appScripts = pipes.builtAppScriptsProd();
-    var appStyles = pipes.builtStylesProd();
-
-    return pipes.validatedIndex()
-        .pipe(gulp.dest(paths.prodDist)) // write first to get relative path for inject
-        .pipe(inject(series(vendorScripts, appScripts), { relative: true }))
-        .pipe(inject(appStyles, { relative: true }))
-        //.pipe(plugins.htmlmin({collapseWhitespace: true, removeComments: true}))
-        .pipe(gulp.dest(paths.prodDist));
+    return gulp.src(paths.srcIndex)
+        .pipe(gulp.dest(paths.dev)) // write first to get relative path for inject
+        .pipe(inject(script, { relative: true }))
+        .pipe(gulp.dest(paths.dev));
 };
-
-
-
-pipes.builtAppDev = function () {
-    return es.merge(pipes.builtIndexDev());
-};
-
-pipes.builtAppProd = function () {
-    return es.merge(pipes.builtIndexProd());
-};
-
-
-// cleans and builds a complete prod environment
-gulp.task('default', ['prod-clean'], pipes.builtAppProd);
-// cleans and builds a complete dev environment
-gulp.task('dev', ['dev-clean'], pipes.builtAppDev);
+gulp.task('default', ['clean'], pipes.built);

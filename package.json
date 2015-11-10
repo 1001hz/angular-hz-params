@@ -11,10 +11,8 @@
   },
   "devDependencies": {
     "del": "^1.2.0",
-    "event-stream": "^3.3.1",
     "gulp": "^3.9.0",
     "gulp-angular-filesort": "^1.1.1",
-    "gulp-angular-templatecache": "^1.7.0",
     "gulp-concat": "^2.6.0",
     "gulp-filter": "^3.0.0",
     "gulp-htmlhint": "^0.3.0",
@@ -26,7 +24,6 @@
     "gulp-ng-annotate": "^1.1.0",
     "gulp-ng-html2js": "^0.2.0",
     "gulp-order": "^1.1.1",
-    "gulp-print": "^1.1.0",
     "gulp-uglify": "^1.2.0",
     "jasmine-core": "^2.3.4",
     "karma": "^0.13.9",
@@ -36,7 +33,6 @@
     "karma-phantomjs-launcher": "^0.2.1",
     "main-bower-files": "^2.9.0",
     "phantomjs": "^1.9.18",
-    "q": "^1.4.1",
-    "stream-series": "^0.1.1"
+    "q": "^1.4.1"
   }
 }
