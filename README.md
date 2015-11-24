@@ -1,5 +1,10 @@
 # angular-hz-params
-Config settings for different environments
+Config settings for multiple environments
+
+## Install
+
+#### Install using bower
+bower install angular-hz-params
 
 ## Usage
 ```javascript
