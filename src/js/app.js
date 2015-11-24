@@ -2,7 +2,7 @@
 
     'use strict';
 
-    angular.module('app', ['angular-hz-param']);
+    angular.module('app', ['angular-hz-params']);
 
     angular
         .module('app')
@@ -18,16 +18,16 @@
             ParamsProvider.setParams(
                 {
                     prod: {
-                        googleApiKey: 'ABCDEFGabcdefg'
+                        googleApiKey: 'prodABCDEFGabcdefg'
                     },
                     qas: {
-                        googleApiKey: 'ABCDEFGabcdefg'
+                        googleApiKey: 'qasABCDEFGabcdefg'
                     },
                     dev: {
-                        googleApiKey: 'ABCDEFGabcdefg'
+                        googleApiKey: 'devABCDEFGabcdefg'
                     },
                     local: {
-                        googleApiKey: 'ABCDEFGabcdefg'
+                        googleApiKey: 'localABCDEFGabcdefg'
                     }
                 }
             );

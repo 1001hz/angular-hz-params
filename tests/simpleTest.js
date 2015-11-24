@@ -1,24 +1,12 @@
 describe('Params Service Provider: ', function () {
-
     var theParamsProvider;
 
-    beforeEach(function () {
-        // Initialize the service provider
-        // by injecting it to a fake module's config block
-        var fakeModule = angular.module('test.app.config', function () {});
-        fakeModule.config( function (ParamsProvider) {
-            theParamsProvider = ParamsProvider;
-        });
-        // Initialize test.app injector
-        module('app', 'test.app.config');
-
-        // Kickstart the injectors previously registered
-        // with calls to angular.mock.module
-        inject(function () {});
-    });
+    beforeEach(module('angular-hz-params', function( ParamsProvider ) {
+        theParamsProvider = ParamsProvider;
+    }));
 
     describe('with custom configuration', function () {
-        it('should return the default value if the current host is not defined', function () {
+        it('should return the default value if the current host is not defined', inject(function () {
             // check sanity
             expect(theParamsProvider).not.toBeUndefined();
 
@@ -43,9 +31,9 @@ describe('Params Service Provider: ', function () {
             );
 
             expect(theParamsProvider.$get().get('googleApiKey')).toBe('default value');
-        });
+        }));
 
-        it('should return the correct value for current host (localhost)', function () {
+        it('should return the correct value for current host (localhost)', inject(function () {
             // check sanity
             expect(theParamsProvider).not.toBeUndefined();
 
@@ -70,7 +58,7 @@ describe('Params Service Provider: ', function () {
             );
 
             expect(theParamsProvider.$get().get('googleApiKey')).toBe('123456');
-        });
+        }));
     });
 
 })

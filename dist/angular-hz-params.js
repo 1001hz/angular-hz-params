@@ -2,6 +2,14 @@
 
     "use strict";
 
+    angular.module('angular-hz-params',[]);
+
+
+})();
+(function() {
+
+    "use strict";
+
     angular
         .module('angular-hz-params')
         .provider("Params", function () {

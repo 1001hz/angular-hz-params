@@ -17,8 +17,7 @@ module.exports = function(config) {
     files: [
       'bower_components/angular/angular.js',
       'bower_components/angular-mocks/angular-mocks.js',
-      'bower_components/angular-route/angular-route.js',
-      'src/*.js',
+      'src/js/angular-hz-params/angularHzParams.js',
       'src/**/*.js',
       'tests/*.js',
       'src/**/*.html'
@@ -35,11 +34,6 @@ module.exports = function(config) {
     preprocessors: {
     },
 
-    ngHtml2JsPreprocessor: {
-      // strip this from the file path
-      stripPrefix: 'src/',
-      moduleName: 'partials'
-    },
 
 
     // test results reporter to use

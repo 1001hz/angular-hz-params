@@ -28,9 +28,15 @@ router.get('/', function (req, res) {
     });
 });
 
+ router.get('/dist/*', function (req, res) {
+     d.run(function () {
+         res.sendfile('./' + req.url);
+     });
+ });
+
 router.get('/*', function (req, res) {
     d.run(function () {
-        res.sendfile('./' + req.url);
+        res.sendfile('./dev/' + req.url);
     });
 });
 

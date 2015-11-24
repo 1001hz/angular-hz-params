@@ -10,9 +10,11 @@ var del = require('del');
 var Q = require('q');
 var angularFilesort = require('gulp-angular-filesort');
 var inject = require('gulp-inject');
+var series = require('stream-series');
 
 var paths = {
-    scripts: 'src/**/*.js',
+    devScripts: 'src/**/*.js',
+    module: 'src/js/angular-hz-params/*.js',
     dist: "dist",
     srcIndex: 'src/index.html',
     dev: 'dev'
@@ -28,12 +30,17 @@ gulp.task('clean', function () {
     return deferred.promise;
 });
 
-pipes.orderedAppScripts = function () {
+pipes.orderedScripts = function () {
     return angularFilesort();
 };
 
 pipes.validatedAppScripts = function () {
-    return gulp.src([paths.scripts,'!src/tests/*.js'])
+    return gulp.src([paths.devScripts,'!'+paths.module,'!src/tests/*.js'])
+        .pipe(plugins.jshint());
+};
+
+pipes.validatedModuleScripts = function () {
+    return gulp.src([paths.module])
         .pipe(plugins.jshint());
 };
 
@@ -43,33 +50,59 @@ pipes.builtVendorScriptsDev = function () {
         .pipe(gulp.dest(paths.dev + '/vendor'));
 }
 
-pipes.builtScript = function () {
+
+
+pipes.builtAppScript = function () {
     var validatedAppScripts = pipes.validatedAppScripts();
 
     return validatedAppScripts
-        .pipe(pipes.orderedAppScripts())
+        .pipe(pipes.orderedScripts())
+        .pipe(plugins.concat('app.js'))
+        .pipe(gulp.dest(paths.dev));
+};
+
+pipes.builtModuleScript = function () {
+    var validatedModuleScripts = pipes.validatedModuleScripts();
+
+    return validatedModuleScripts
+        .pipe(pipes.orderedScripts())
         .pipe(plugins.concat('angular-hz-params.js'))
         .pipe(gulp.dest(paths.dist));
 };
 
-pipes.builtScriptMin = function () {
-    var validatedAppScripts = pipes.validatedAppScripts();
+pipes.builtModuleScriptMin = function () {
+    var validatedModuleScripts = pipes.validatedModuleScripts();
 
-    return validatedAppScripts
-        .pipe(pipes.orderedAppScripts())
+    return validatedModuleScripts
+        .pipe(pipes.orderedScripts())
         .pipe(plugins.concat('angular-hz-params.min.js'))
         .pipe(plugins.uglify())
         .pipe(gulp.dest(paths.dist));
 };
 
 pipes.built = function () {
-    var script = pipes.builtScript();
-    var builtVendorScriptsDev = pipes.builtVendorScriptsDev();
-    //pipes.builtScriptMin();
+    var appScripts = pipes.builtAppScript();
+    var moduleScripts = pipes.builtModuleScript();
+    var builtVendorScripts = pipes.builtVendorScriptsDev();
+    pipes.builtModuleScriptMin();
 
     return gulp.src(paths.srcIndex)
         .pipe(gulp.dest(paths.dev)) // write first to get relative path for inject
-        .pipe(inject(script, { relative: true }))
+        .pipe(inject(series(builtVendorScripts, appScripts, moduleScripts), { relative: true }))
         .pipe(gulp.dest(paths.dev));
 };
+
+pipes.builtMin = function () {
+    var appScripts = pipes.builtAppScript();
+    var moduleScripts = pipes.builtModuleScriptMin();
+    var builtVendorScripts = pipes.builtVendorScriptsDev();
+    pipes.builtModuleScript();
+
+    return gulp.src(paths.srcIndex)
+        .pipe(gulp.dest(paths.dev)) // write first to get relative path for inject
+        .pipe(inject(series(builtVendorScripts, appScripts, moduleScripts), { relative: true }))
+        .pipe(gulp.dest(paths.dev));
+};
+
 gulp.task('default', ['clean'], pipes.built);
+gulp.task('min', ['clean'], pipes.builtMin);

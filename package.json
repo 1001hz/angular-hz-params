@@ -33,6 +33,7 @@
     "karma-phantomjs-launcher": "^0.2.1",
     "main-bower-files": "^2.9.0",
     "phantomjs": "^1.9.18",
-    "q": "^1.4.1"
+    "q": "^1.4.1",
+    "stream-series": "^0.1.1"
   }
 }

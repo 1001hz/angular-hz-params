@@ -3,7 +3,7 @@ bower_components/
 node_modules/
 
 # Build files #
-dist/
+dev/
 
 # OS generated files #
 ######################

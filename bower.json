@@ -1,11 +1,27 @@
 {
   "name": "angular-hz-params",
   "version": "0.1.0",
+  "main": "dist/angular-hz-params.min.js",
+  "ignore": [
+    "src",
+    "tests",
+    "server",
+    ".bowerrc",
+    ".gitignore",
+    "bower.json",
+    "gulpfile.js",
+    "karma.config.js",
+    "package.json",
+    "README.md",
+    "server.js"
+  ],
   "authors": [
     "1001hz <1001hz@gmail.com>"
   ],
   "dependencies": {
-    "angular": "~1.4.3",
+    "angular": "~1.4.3"
+  },
+  "devDependencies": {
     "angular-mocks": "~1.4.3"
   }
 }
